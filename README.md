@@ -1,0 +1,1 @@
+To use Clp on Windows download it via [vcpkg](https://github.com/microsoft/vcpkg).
