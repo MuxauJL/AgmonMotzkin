@@ -1,7 +1,7 @@
 #ifndef MV_AgmonMotzkin_H_
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <ClpSimplex.hpp>
 #include <CoinPackedVector.hpp>
 
@@ -31,7 +31,7 @@ private:
 	std::vector<double> rowLowers_;
 	std::vector<double> colLowers_;
 	std::vector<double> x_;
-	std::map<int, double> coefficientSquaresSums_; // cache
+	std::unordered_map<int, double> coefficientSquaresSums_; // cache
 };
 
 #endif // MV_AgmonMotzkin_H_

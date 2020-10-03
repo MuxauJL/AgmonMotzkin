@@ -163,7 +163,7 @@ double AgmonMotzkin::coefficientSquaresSum(int iRowIndex)
 	return dResult;
 }
 
-std::pair<int, double>  AgmonMotzkin::prepareStep()
+std::pair<int, double> AgmonMotzkin::prepareStep()
 {
 	MV_ASSERT(matrix_.isColOrdered() == false);
 

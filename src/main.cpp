@@ -1,6 +1,8 @@
 ﻿#include <iostream>
-#include "AgmonMotzkin.h"
 #include <numeric>
+
+#include "AgmonMotzkin.h"
+#include <Timer.h>
 
 void appendObjectiveToConstraints(const ClpSimplex& model, AgmonMotzkin& rAgmonMotzkin,
     double dLowerBound, double dUpperBound)
@@ -17,11 +19,16 @@ int main()
 {
     ClpSimplex model;
     int status = model.readMps("C:/Users/Mikhail/Desktop/repo/LinearProgramming/data/netlib/afiro.mps");
+    //int status = model.readMps("C:/Users/Mikhail/Desktop/repo/LinearProgramming/data/netlib/OSA-60.mps");
     if (status)
     {
         return status;
     }
-    model.primal();
+
+    {
+        Timer t("Clp primal time: ");
+        model.primal();
+    }
 
 
     AgmonMotzkin agmonMotzkin;
@@ -30,18 +37,14 @@ int main()
         return -1;
     }
 
-    appendObjectiveToConstraints(model, agmonMotzkin, -464.77, -464.75);
+    // optimal for afiro.mps
+    //appendObjectiveToConstraints(model, agmonMotzkin, -464.77, -464.75);
 
-    while (agmonMotzkin.nextApproximation(1e-8));
-    auto x = agmonMotzkin.getCurrentPoint();
-    double dObj = agmonMotzkin.getCurrentObjectiveValue();
-
-    const double* columnPrimal = model.getColSolution();
-    int iNumberColumns = model.getNumCols();
-    for (int iCol = 0; iCol < iNumberColumns; ++iCol)
     {
-        printf("%f %f\n", x[iCol], columnPrimal[iCol]);
+        Timer t("Agmon-Motzkin algorithm time: ");
+        while (agmonMotzkin.nextApproximation(1e-8));
     }
+    double dObj = agmonMotzkin.getCurrentObjectiveValue();
     printf("Agmon-Motzkin algorithm objective value = %f", dObj);
 
     return 0;
