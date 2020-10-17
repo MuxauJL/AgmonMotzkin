@@ -16,6 +16,21 @@ public:
 			<< std::chrono::duration_cast<std::chrono::microseconds>(clock::now() - startTime_).count()
 			<< " microseconds" << std::endl;
 	}
+
+	inline double getSeconds()
+	{
+		return std::chrono::duration_cast<std::chrono::microseconds>(clock::now() - startTime_).count() / 1e6;
+	}
+
+	inline double getMilliseconds()
+	{
+		return std::chrono::duration_cast<std::chrono::microseconds>(clock::now() - startTime_).count() / 1e3;
+	}
+
+	inline double getMicroseconds()
+	{
+		return std::chrono::duration_cast<std::chrono::microseconds>(clock::now() - startTime_).count();
+	}
 private:
 	std::string sMessage_;
 	time_point startTime_;
