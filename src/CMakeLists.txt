@@ -22,3 +22,9 @@ target_link_libraries(LinearProgramming PRIVATE
 target_include_directories(LinearProgramming PRIVATE
 	${CLP_INCLUDE}
 	${ROOT_DIRECTORY}/utils)
+
+file(COPY ${ROOT_DIRECTORY}/data/mps/
+	DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/mps)
+
+file(COPY ${ROOT_DIRECTORY}/data/feasible_solutions/
+	DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/feasible_solutions)
