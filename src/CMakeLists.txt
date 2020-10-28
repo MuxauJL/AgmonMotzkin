@@ -9,22 +9,16 @@ if (NOT DEFINED CLP_INCLUDE)
 endif()
 
 file(GLOB SRC_FILES 
-    ${ROOT_DIRECTORY}/src/*.cpp
-    ${ROOT_DIRECTORY}/utils/*.cpp)
+    ${ROOT_DIRECTORY}/src/*.cpp)
 
-add_executable (LinearProgramming ${SRC_FILES})
+add_library(core STATIC ${SRC_FILES})
 
-target_link_libraries(LinearProgramming PRIVATE
+target_link_libraries(core PRIVATE
     "${CLP_LIBS}/Clp.lib"
     "${CLP_LIBS}/CoinUtils.lib"
     "${CLP_LIBS}/Osi.lib")
 
-target_include_directories(LinearProgramming PRIVATE
-    ${CLP_INCLUDE}
-    ${ROOT_DIRECTORY}/utils)
-
-file(COPY ${ROOT_DIRECTORY}/data/mps/
-    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/mps)
-
-file(COPY ${ROOT_DIRECTORY}/data/feasible_solutions/
-    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/feasible_solutions)
+target_include_directories(core PRIVATE
+    ${ROOT_DIRECTORY}/include
+    ${ROOT_DIRECTORY}/utils
+    ${CLP_INCLUDE})

@@ -7,6 +7,7 @@
 
 class AgmonMotzkin
 {
+    friend class AgmonMotzkinMPI;
 public:
     AgmonMotzkin() = default;
     ~AgmonMotzkin() = default;
