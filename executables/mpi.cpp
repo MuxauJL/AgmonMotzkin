@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
         constexpr int iTag = 0;
 
         constexpr double dEpsilon = 1e-8;
-        constexpr size_t nMaxSteps = 100000000;
+        constexpr size_t nMaxSteps = 1000000;
         size_t nStep = 0;
         while (++nStep < nMaxSteps)
         {
@@ -75,11 +75,11 @@ int main(int argc, char* argv[])
                 (void)MPI_Send(buffer.data(), nTotalSize, MPI_CHAR, 0, iTag, MPI_COMM_WORLD);
             }
             (void)MPI_Bcast(buffer.data(), nTotalSize, MPI_CHAR, 0, MPI_COMM_WORLD);
-            agmonMotzkin.updateCurrentPoint(*pRow, *pStep);
-            if (*pStep < dEpsilon)
+            if ((*pRow < 0) || (*pStep < dEpsilon))
             {
                 break;
             }
+            agmonMotzkin.updateCurrentPoint(*pRow, *pStep);
         }
 
         if (iProcId == 0)

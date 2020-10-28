@@ -44,16 +44,16 @@ int main()
         {
             Timer t("Agmon-Motzkin algorithm time: ");
             constexpr double dEpsilon = 1e-8;
-            constexpr size_t nMaxSteps = 100000000;
+            constexpr size_t nMaxSteps = 1000000;
             size_t nStep = 0;
             while (++nStep < nMaxSteps)
             {
                 auto [iRow, dStep] = agmonMotzkin.prepareStep();
-                agmonMotzkin.updateCurrentPoint(iRow, dStep);
-                if (dStep < dEpsilon)
+                if ((iRow < 0) || (dStep < dEpsilon))
                 {
                     break;
                 }
+                agmonMotzkin.updateCurrentPoint(iRow, dStep);
             }
         }
         double dObjectiveValue = agmonMotzkin.getCurrentObjectiveValue();
