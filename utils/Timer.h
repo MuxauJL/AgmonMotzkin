@@ -17,6 +17,12 @@ public:
             << " microseconds" << std::endl;
     }
 
+    inline void reset(const std::string& sMessage = "")
+    {
+        sMessage_ = sMessage;
+        startTime_ = clock::now();
+    }
+
     inline double getSeconds()
     {
         return std::chrono::duration_cast<std::chrono::microseconds>(clock::now() - startTime_).count() / 1e6;
