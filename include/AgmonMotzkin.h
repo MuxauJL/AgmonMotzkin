@@ -7,21 +7,21 @@
 
 class AgmonMotzkin
 {
-    friend class AgmonMotzkinMPI;
 public:
     AgmonMotzkin() = default;
     ~AgmonMotzkin() = default;
     bool init(const ClpSimplex& rModel);
-    bool nextApproximation(double dEpsilon);
     bool setCurrentPoint(const std::vector<double>& rCurrentPoint);
     const std::vector<double>& getCurrentPoint();
     double getCurrentObjectiveValue();
     void appendConstraint(int iNumCoefficients, const int* pIndices, const double* pCoefficients, double dLowerBound, double dUpperBound = COIN_DBL_MAX);
     void printMatrix();
+    std::pair<int, double> prepareStep();
+    std::pair<int, double> prepareStep(int iProcessId, int iNumProcesses);
+    void updateCurrentPoint(int iRow, double dStep);
 private:
     void convertToStandardFormMin(std::vector<double>& rRowUppers);
     double coefficientSquaresSum(int iRowIndex);
-    std::pair<int, double> prepareStep();
 
 private:
     CoinPackedMatrix matrix_;

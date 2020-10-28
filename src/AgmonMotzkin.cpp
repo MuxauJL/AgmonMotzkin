@@ -1,4 +1,4 @@
-#include "AgmonMotzkin.h"
+#include <AgmonMotzkin.h>
 #include <Debug.h>
 #include <numeric>
 
@@ -42,42 +42,6 @@ bool AgmonMotzkin::init(const ClpSimplex& rModel)
     std::vector<double> rowUppers(pRowUppers, pRowUppers + iNumRows);
     convertToStandardFormMin(rowUppers);
 
-    return true;
-}
-
-bool AgmonMotzkin::nextApproximation(double dEpsilon)
-{
-    MV_ASSERT(matrix_.isColOrdered() == false);
-    MV_ASSERT(x_.size() == matrix_.getNumCols());
-
-    auto [iRow, dStep] = prepareStep();
-    if ((iRow < 0) || (dStep < dEpsilon))
-    {
-        return false;
-    }
-    MV_ASSERT(iRow >= 0);
-    MV_ASSERT(dStep > 0);
-
-    int iNumRows = matrix_.getNumRows();
-    int iNumCols = matrix_.getNumCols();
-    MV_ASSERT(iRow < iNumRows + iNumCols);
-    // Indices iRow = iNumRows, ..., iNumRows + iNumCols - 1
-    // correspond to constraints:
-    // x[iCol] >= 0, iCol = 0, ..., iNumCols - 1
-    if (iRow >= iNumRows)
-    {
-        x_[iRow - iNumRows] += dStep;
-        return true;
-    }
-
-    auto direction = matrix_.getVector(iRow);
-    const double* pCoefficients = direction.getElements();
-    const int iLength = direction.getNumElements();
-    const int* pIndices = direction.getIndices();
-    for (int iIndex = 0; iIndex < iLength; ++iIndex)
-    {
-        x_[pIndices[iIndex]] += dStep * pCoefficients[iIndex];
-    }
     return true;
 }
 
@@ -280,4 +244,83 @@ void AgmonMotzkin::printMatrix()
         }
         printf("<= +inf\n");
     }
+}
+
+void AgmonMotzkin::updateCurrentPoint(int iRow, double dStep)
+{
+    MV_ASSERT(iRow >= 0);
+    MV_ASSERT(dStep > 0);
+
+    int iNumRows = matrix_.getNumRows();
+    int iNumCols = matrix_.getNumCols();
+    MV_ASSERT(iRow < iNumRows + iNumCols);
+    // Indices iRow = iNumRows, ..., iNumRows + iNumCols - 1
+    // correspond to constraints:
+    // x[iCol] >= 0, iCol = 0, ..., iNumCols - 1
+    if (iRow >= iNumRows)
+    {
+        x_[iRow - iNumRows] += dStep;
+        return;
+    }
+
+    auto direction = matrix_.getVector(iRow);
+    const double* pCoefficients = direction.getElements();
+    const int iLength = direction.getNumElements();
+    const int* pIndices = direction.getIndices();
+    for (int iIndex = 0; iIndex < iLength; ++iIndex)
+    {
+        x_[pIndices[iIndex]] += dStep * pCoefficients[iIndex];
+    }
+    return;
+}
+
+std::pair<int, double> AgmonMotzkin::prepareStep(int iProcessId, int iNumProcesses)
+{
+    MV_ASSERT(matrix_.isColOrdered() == false);
+
+    double dMaxViolation = 0;
+    int iIdx = -1;
+    int iNumRows = matrix_.getNumRows();
+    int iStride = (iNumRows / iNumProcesses) + 1;
+    int iStartRange = iProcessId * iStride;
+    int iEndRange = std::min(iStartRange + iStride, iNumRows);
+    for (int iRow = iStartRange; iRow < iEndRange; ++iRow)
+    {
+        double dResult = 0;
+        auto coefficients = matrix_.getVector(iRow);
+        const double* pCoefficients = coefficients.getElements();
+        const int iLength = coefficients.getNumElements();
+        const int* pIndices = coefficients.getIndices();
+        for (int iIndex = 0; iIndex < iLength; ++iIndex)
+        {
+            dResult += pCoefficients[iIndex] * x_[pIndices[iIndex]];
+        }
+        double dLowerBound = rowLowers_[iRow];
+        if (dResult < dLowerBound)
+        {
+            double dStep = (dLowerBound - dResult) / (coefficientSquaresSum(iRow));
+            if (dMaxViolation < dStep)
+            {
+                dMaxViolation = dStep;
+                iIdx = iRow;
+            }
+        }
+    }
+
+    // check that x[iCol] >= 0, iCol = 0, 1, ..., iNumCols - 1
+    int iNumCols = matrix_.getNumCols();
+    iStride = (iNumCols / iNumProcesses) + 1;
+    iStartRange = iProcessId * iStride;
+    iEndRange = std::min(iStartRange + iStride, iNumCols);
+    for (int iCol = iStartRange; iCol < iEndRange; ++iCol)
+    {
+        double dStep = -x_[iCol];
+        if (dMaxViolation < dStep)
+        {
+            dMaxViolation = dStep;
+            iIdx = iNumRows + iCol;
+        }
+    }
+
+    return { iIdx, dMaxViolation };
 }

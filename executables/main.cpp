@@ -43,7 +43,18 @@ int main()
         }
         {
             Timer t("Agmon-Motzkin algorithm time: ");
-            while (agmonMotzkin.nextApproximation(1e-8));
+            constexpr double dEpsilon = 1e-8;
+            constexpr size_t nMaxSteps = 100000000;
+            size_t nStep = 0;
+            while (++nStep < nMaxSteps)
+            {
+                auto [iRow, dStep] = agmonMotzkin.prepareStep();
+                agmonMotzkin.updateCurrentPoint(iRow, dStep);
+                if (dStep < dEpsilon)
+                {
+                    break;
+                }
+            }
         }
         double dObjectiveValue = agmonMotzkin.getCurrentObjectiveValue();
         std::cout << "Agmon-Motzkin algorithm objective value = " << dObjectiveValue << '\n';
